@@ -7,8 +7,8 @@ const request = indexedDB.open('budget_tracker', 1);
 // use an event that will emit if the database version changes (null to ver 1, v1 to v2 etc...)
 request.onupgradeneeded = function(event) {
     const db = event.target.result;
-    // create an object store or table called new_tracker with auto incrementing primary key
-    db.createObjectStore('new_tracker', { autoIncrement: true });
+    // create an object store or table called new_transaction with auto incrementing primary key
+    db.createObjectStore('new_transaction', { autoIncrement: true });
 };
 
 // after successful request
@@ -17,7 +17,7 @@ request.onsuccess = function(event) {
 
     // check if app is online
     if (navigator.onLine) {
-        uploadTracker();
+        uploadTransaction();
     }
 };
 
@@ -26,11 +26,55 @@ request.onerror = function(event) {
     console.log(event.target.errorCode)
 };
 
-// execute a function if an attempt is made to submit a new tracker and there's no internet connection
+// execute a function if an attempt is made to submit a new transaction and there's no internet connection
 function saveRecord(record) {
-    const transaction = db.transaction(['new_tracker'], 'readwrite');
+    const transaction = db.transaction('new_transaction', 'readwrite');
 
-    const trackerObjectStore = transaction.objectStore('new_tracker');
+    const transactionObjectStore = transaction.objectStore('new_transaction');
 
-    trackerObjectStore.add(record);
+    transactionObjectStore.add(record);
 }
+
+// add a function to use the object srore in indexedDB and POST it to the server when connection returns
+function uploadTransaction() {
+    const transaction = db.transaction('rew_transaction', 'readwrite');
+
+    const transactionObjectStore = transaction.objectStore('new_transaction');
+
+    const getAll = transactionObjectStore.getAll();
+
+    // on a successful getAll execution, run the following
+
+    getAll.onsuccess = function() {
+        if (getAll.result.length > 0) {
+            fetch('/api/transaction', {
+                method: 'POST',
+                body: JSON.stringify(getAll.result),
+                headers: {
+                    Accept: 'application/json, text/plain, */*',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(serverResponse => {
+                if (serverResponse.message) {
+                    throw new Error(serverResponse);
+                }
+                const transaction = db.transaction(['new_transaction'], 'readwrite');
+
+                const transactionObjectStore = transaction.objectStore('new_transaction');
+
+                // clear items from store after succesful POST
+                transactionObjectStore.clear();
+
+                alert('All saved transactions have been submitted');
+            })
+            .catch(err => {
+                console.log(err);
+            });
+        }
+    };
+};
+
+// listen for restarted connection or back online
+window.addEventListener('online', uploadTransaction);

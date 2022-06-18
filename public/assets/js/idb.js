@@ -37,7 +37,7 @@ function saveRecord(record) {
 
 // add a function to use the object srore in indexedDB and POST it to the server when connection returns
 function uploadTransaction() {
-    const transaction = db.transaction('rew_transaction', 'readwrite');
+    const transaction = db.transaction('new_transaction', 'readwrite');
 
     const transactionObjectStore = transaction.objectStore('new_transaction');
 

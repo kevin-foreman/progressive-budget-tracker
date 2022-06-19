@@ -26,7 +26,7 @@ self.addEventListener('install', function (e) {
             return cache.addAll(FILES_TO_CACHE)
         })
     )
-})
+});
 
 // add an event listener to the activate event
 self.addEventListener('activate', function (e) {
@@ -65,5 +65,5 @@ self.addEventListener('fetch', function (e) {
             // return request || fetch(e.request)
         })
 
-    )
-})
+    );
+});

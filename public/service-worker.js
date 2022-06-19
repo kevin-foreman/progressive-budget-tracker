@@ -19,51 +19,76 @@ const CACHE_NAME = "budget-cache-v1";
 const DATA_CACHE_NAME = "data-cache-v1";
 
 // install service worker and add waitUntil()
-self.addEventListener('install', function (e) {
-    e.waitUntil(
-        caches.open(CACHE_NAME).then(function (cache) {
+self.addEventListener("install", function (evt) {
+    evt.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => {
             console.log('installing cache : ' + CACHE_NAME)
             return cache.addAll(FILES_TO_CACHE)
         })
-    )
+    );
+
+    self.skipWaiting();
 });
 
 // add an event listener to the activate event
-self.addEventListener('activate', function (e) {
-    e.waitUntil(
-        caches.keys().then(function (keyList) {
-            let cacheKeeplist = keyList.filter(function (key) {
-                return key.indexOf("budget-cache-v1");
-            });
-            cacheKeeplist.push(CACHE_NAME);
+self.addEventListener("activate", function (evt) {
+    evt.waitUntil(
+        caches.keys().then((keyList) => {
+            // let cacheKeeplist = keyList.filter(function (key) {
+            //     return key.indexOf("budget-cache-v1");
+            // });
+            // cacheKeeplist.push(CACHE_NAME);
 
             return Promise.all(
-                keyList.map(function (key, i) {
-                    if (cacheKeeplist.indexOf(key) === -1) {
-                        console.log('deleting cache : ' + keyList[i]);
-                        return caches.delete(keyList[i]);
+                keyList.map(key => {
+                    if (key !== CACHE_NAME && key !== DATA_CACHE_NAME) {
+                        console.log("Removing old cache data", key);
+                        return caches.delete(key);
                     }
                 })
             );
         })
     );
+
+    self.clients.claim();
 });
 
-self.addEventListener('fetch', function (e) {
-    console.log('fetch request : ' + e.request.url)
-    e.respondWith(
-        caches.match(e.request).then(function (request) {
-            if (request) {
-                console.log('responding with cache : ' + e.request.url)
-                return request
-            } else {
-                console.log('file is not cached, fetching : ' + e.request.url)
-                return fetch(e.request)
-            }
+self.addEventListener("fetch", function (evt) {
+    evt.respondWith(
+        caches
+            .open(DATA_CACHE_NAME)
+            .then((cache) => {
+                return fetch(evt.request)
+                    .then((response) => {
+                        if (response.status === 200) {
+                            cache.put(evt.request.url, response.clone());
+                        }
+                        return response;
+                    })
+                    .catch((err) => {
+                        return cache.match(evt.request);
+                    });
 
-            // it is possible to omit if/else for the console.log and put one line below such as this example
-            // return request || fetch(e.request)
-        })
+                // it is possible to omit if/else for the console.log and put one line below such as this example
+                // return request || fetch(e.request)
+            })  
+        .catch((err) => console.log(err))
 
     );
+return;
+
+
+evt.respondWith(
+    fetch(evt.request).catch(function () {
+        return caches.match(evt.request).then(function (response) {
+            if (response) {
+                return response;
+
+            } else if (evt.request.headers.get("accept").includes("text/html")) {
+                return caches.match("/");
+            }
+        });
+    })
+    );
 });
+

@@ -67,7 +67,7 @@ function uploadTransaction() {
                 // clear items from store after succesful POST
                 transactionObjectStore.clear();
 
-                alert('All saved transactions have been submitted');
+               // alert('All saved transactions have been submitted');
             })
             .catch(err => {
                 console.log(err);

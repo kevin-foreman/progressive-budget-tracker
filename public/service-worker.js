@@ -34,6 +34,7 @@ self.addEventListener("install", function (evt) {
 self.addEventListener("activate", function (evt) {
     evt.waitUntil(
         caches.keys().then((keyList) => {
+            // refactored to make these unnecessary....
             // let cacheKeeplist = keyList.filter(function (key) {
             //     return key.indexOf("budget-cache-v1");
             // });

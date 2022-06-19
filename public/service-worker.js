@@ -3,7 +3,7 @@ const FILES_TO_CACHE = [
     "/index.html",
     "/css/styles.css",
     "/js/idb.js",
-    "/js/index.js"
+    "/js/index.js",
     "/manifest.json",
     "/icons/icon-72x72.png",
     "/icons/icon-96x96.png",
@@ -15,8 +15,8 @@ const FILES_TO_CACHE = [
     "/icons/icon-512x512.png"
 ];
 
-const CACHE_NAME = APP_PREFIX + VERSION;
-const DATA_CACHE_NAME = DATA_APP_PREFIX + VERSION;
+const CACHE_NAME = "budget-cache-v1";
+const DATA_CACHE_NAME = "data-cache-v1";
 
 // install service worker and add waitUntil()
 self.addEventListener('install', function (e) {
@@ -33,7 +33,7 @@ self.addEventListener('activate', function (e) {
     e.waitUntil(
         caches.keys().then(function (keyList) {
             let cacheKeeplist = keyList.filter(function (key) {
-                return key.indexOf(APP_PREFIX);
+                return key.indexOf("budget-cache-v1");
             });
             cacheKeeplist.push(CACHE_NAME);
 

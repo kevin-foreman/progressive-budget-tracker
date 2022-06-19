@@ -32,8 +32,8 @@ function populateTable() {
         // create and populate a table row
         let tr = document.createElement("tr");
         tr.innerHTML = `
-      <td>${transaction.name}</td>
-      <td>${transaction.value}</td>
+        <td>${transaction.name}</td>
+        <td>${transaction.value}</td>
     `;
 
         tbody.appendChild(tr);
@@ -42,7 +42,7 @@ function populateTable() {
 
 function populateChart() {
     // copy array and reverse it
-    let reversed = transactions.slice().reverse(); 
+    let reversed = transactions.slice().reverse();
     let sum = 0;
 
     // create date labels for chart
